@@ -1,13 +1,25 @@
 import { useState } from 'react'
-import { Plus, Trash2, Flame, Check } from 'lucide-react'
+import { 
+  Plus, Trash2, Flame, Check,
+  Dumbbell, PersonStanding, BookOpen, Activity, 
+  Apple, Droplets, Moon, Brain, 
+  Target, PenTool, Music, Leaf, 
+  Coffee, Heart, Zap, Sunrise
+} from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
-const EMOJIS = ['💪','🧘','📚','🏃','🍎','💧','😴','🧠','🎯','✍️','🎵','🌿','🚶','🍃','⚡','🌅']
+const ICONS = {
+  dumbbell: Dumbbell, person: PersonStanding, book: BookOpen, activity: Activity,
+  apple: Apple, drop: Droplets, moon: Moon, brain: Brain,
+  target: Target, pen: PenTool, music: Music, leaf: Leaf,
+  coffee: Coffee, heart: Heart, zap: Zap, sun: Sunrise
+}
+const ICON_KEYS = Object.keys(ICONS)
 
 export default function HabitTracker({ habits, habitLogs, today, onUpdate }) {
   const [showAdd, setShowAdd] = useState(false)
   const [newName, setNewName] = useState('')
-  const [newEmoji, setNewEmoji] = useState('💪')
+  const [newIcon, setNewIcon] = useState('dumbbell')
   const [loading, setLoading] = useState(false)
 
   const todayLogs = habitLogs.filter(l => l.date === today)
@@ -45,7 +57,7 @@ export default function HabitTracker({ habits, habitLogs, today, onUpdate }) {
   async function addHabit() {
     if (!newName.trim()) return
     setLoading(true)
-    await supabase.from('habits').insert({ name: newName.trim(), emoji: newEmoji })
+    await supabase.from('habits').insert({ name: newName.trim(), emoji: newIcon })
     setNewName(''); setShowAdd(false); setLoading(false)
     onUpdate()
   }
@@ -62,7 +74,7 @@ export default function HabitTracker({ habits, habitLogs, today, onUpdate }) {
     <div>
       <div className="flex items-center justify-between mb-4">
         <span className="section-title" style={{marginBottom:0}}>
-          🌱 Привычки
+          <Target size={18} style={{marginRight:4}} /> Привычки
           <span className="text-muted text-sm" style={{fontWeight:400}}>({done}/{habits.length})</span>
         </span>
         <button className="btn btn-sm btn-ghost" onClick={() => setShowAdd(v => !v)}>
@@ -86,21 +98,27 @@ export default function HabitTracker({ habits, habitLogs, today, onUpdate }) {
           <div className="mb-3">
             <label className="form-label">Иконка</label>
             <div style={{display:'flex', flexWrap:'wrap', gap:6, marginTop:6}}>
-              {EMOJIS.map(e => (
-                <button
-                  key={e}
-                  onClick={() => setNewEmoji(e)}
-                  style={{
-                    background: newEmoji === e ? 'var(--text)' : 'var(--surface3)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 8,
-                    padding:'6px 10px',
-                    cursor:'pointer',
-                    fontSize:16,
-                    transition:'all 0.15s'
-                  }}
-                >{e}</button>
-              ))}
+              {ICON_KEYS.map(key => {
+                const IconComp = ICONS[key]
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setNewIcon(key)}
+                    style={{
+                      background: newIcon === key ? 'var(--text)' : 'var(--surface3)',
+                      color: newIcon === key ? 'var(--bg)' : 'var(--text-secondary)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 8,
+                      padding:'8px',
+                      cursor:'pointer',
+                      display:'flex', alignItems:'center', justifyContent:'center',
+                      transition:'all 0.15s'
+                    }}
+                  >
+                    <IconComp size={18} />
+                  </button>
+                )
+              })}
             </div>
           </div>
           <div className="flex gap-2">
@@ -114,33 +132,38 @@ export default function HabitTracker({ habits, habitLogs, today, onUpdate }) {
 
       {habits.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">🌱</div>
+          <div className="empty-state-icon">
+            <Target size={40} strokeWidth={1.5} />
+          </div>
           <div className="empty-state-text">Добавьте первую привычку</div>
         </div>
       ) : (
         <div className="stack">
           {habits.map(h => {
-            const done = isCompleted(h.id)
-            const streak = getStreak(h.id)
-            return (
-              <div key={h.id} className="habit-item animate-in">
-                <div
-                  className={`checkbox ${done ? 'checked' : ''}`}
-                  onClick={() => toggleHabit(h.id)}
-                >
-                  {done && <Check size={13} strokeWidth={3} />}
-                </div>
-                <div className="habit-emoji">{h.emoji}</div>
-                <div style={{flex:1, minWidth:0}}>
-                  <div style={{fontWeight:500, fontSize:14, textDecoration: done ? 'line-through' : 'none', color: done ? 'var(--text-muted)' : 'var(--text)'}}>
-                    {h.name}
-                  </div>
-                </div>
-                {streak > 0 && (
-                  <div className="streak-badge">
-                    <Flame size={12}/> {streak}д
-                  </div>
-                )}
+             const done = isCompleted(h.id)
+             const streak = getStreak(h.id)
+             const IconComp = ICONS[h.emoji]
+             return (
+               <div key={h.id} className="habit-item animate-in">
+                 <div
+                   className={`checkbox ${done ? 'checked' : ''}`}
+                   onClick={() => toggleHabit(h.id)}
+                 >
+                   {done && <Check size={13} strokeWidth={3} />}
+                 </div>
+                 <div className="habit-emoji">
+                   {IconComp ? <IconComp size={20} /> : <span style={{fontSize:20}}>{h.emoji}</span>}
+                 </div>
+                 <div style={{flex:1, minWidth:0}}>
+                   <div style={{fontWeight:500, fontSize:14, textDecoration: done ? 'line-through' : 'none', color: done ? 'var(--text-muted)' : 'var(--text)'}}>
+                     {h.name}
+                   </div>
+                 </div>
+                 {streak > 0 && (
+                   <div className="streak-badge">
+                     <Flame size={12}/> {streak}д
+                   </div>
+                 )}
                 <button
                   className="btn-icon"
                   style={{marginLeft:4}}

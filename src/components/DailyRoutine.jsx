@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Trash2, Check, GripVertical } from 'lucide-react'
+import { Plus, Trash2, Check, GripVertical, Calendar, Sun } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 export default function DailyRoutine({ routines, today, onUpdate }) {
@@ -45,7 +45,7 @@ export default function DailyRoutine({ routines, today, onUpdate }) {
     <div>
       <div className="flex items-center justify-between mb-4">
         <span className="section-title" style={{marginBottom:0}}>
-          🗓 Ежедневная рутина
+          <Calendar size={18} style={{marginRight:4}} /> Ежедневная рутина
           <span className="text-muted text-sm" style={{fontWeight:400}}>({done}/{routines.length})</span>
         </span>
         <button className="btn btn-sm btn-ghost" onClick={() => setShowAdd(v => !v)}>
@@ -83,7 +83,9 @@ export default function DailyRoutine({ routines, today, onUpdate }) {
 
       {routines.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">☀️</div>
+          <div className="empty-state-icon">
+            <Sun size={40} strokeWidth={1.5} />
+          </div>
           <div className="empty-state-text">Добавьте ежедневные дела</div>
         </div>
       ) : (

@@ -1,45 +1,46 @@
 import { useState } from 'react'
-import { Plus, Trash2, Check, Calendar } from 'lucide-react'
+import { Plus, Trash2, Check, Calendar, CheckSquare, AlignLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
-const CATEGORIES = [
-  { id: 'work', label: 'Работа', emoji: '💼' },
-  { id: 'personal', label: 'Личное', emoji: '🙋' },
-  { id: 'health', label: 'Здоровье', emoji: '💪' },
-  { id: 'study', label: 'Учёба', emoji: '📚' },
-  { id: 'other', label: 'Другое', emoji: '📌' },
-]
-
-const PRIORITIES = [
-  { id: 'high', label: 'Высокий', cls: 'badge-high', dot: 'dot-high' },
-  { id: 'medium', label: 'Средний', cls: 'badge-medium', dot: 'dot-medium' },
-  { id: 'low', label: 'Низкий', cls: 'badge-low', dot: 'dot-low' },
-]
 
 export default function TaskList({ tasks, onUpdate }) {
   const [showAdd, setShowAdd] = useState(false)
-  const [filter, setFilter] = useState('all')
-  const [form, setForm] = useState({ title: '', category: 'work', priority: 'medium', deadline: '' })
+  const [newTitle, setNewTitle] = useState('')
+  const [newCat, setNewCat] = useState('work')
+  const [newPriority, setNewPriority] = useState('medium')
+  const [newDate, setNewDate] = useState('')
   const [loading, setLoading] = useState(false)
+  
+  const [filter, setFilter] = useState('all')
+
+  const CATEGORIES = {
+    work: { label: 'Работа', color: 'var(--info)' },
+    personal: { label: 'Личное', color: 'var(--success)' },
+    learning: { label: 'Обучение', color: 'var(--warning)' },
+  }
+
+  const PRIORITIES = {
+    high: { label: 'Высокий', class: 'badge-high', dot: 'dot-high' },
+    medium: { label: 'Средний', class: 'badge-medium', dot: 'dot-medium' },
+    low: { label: 'Низкий', class: 'badge-low', dot: 'dot-low' }
+  }
 
   async function addTask() {
-    if (!form.title.trim()) return
+    if (!newTitle.trim()) return
     setLoading(true)
     await supabase.from('tasks').insert({
-      title: form.title.trim(),
-      category: form.category,
-      priority: form.priority,
-      deadline: form.deadline || null,
-      completed: false,
+      title: newTitle.trim(),
+      category: newCat,
+      priority: newPriority,
+      due_date: newDate || null,
+      completed: false
     })
-    setForm({ title:'', category:'work', priority:'medium', deadline:'' })
-    setShowAdd(false)
-    setLoading(false)
+    setNewTitle(''); setNewDate(''); setShowAdd(false); setLoading(false)
     onUpdate()
   }
 
-  async function toggleTask(task) {
-    await supabase.from('tasks').update({ completed: !task.completed }).eq('id', task.id)
+  async function toggleTask(t) {
+    await supabase.from('tasks').update({ completed: !t.completed }).eq('id', t.id)
     onUpdate()
   }
 
@@ -48,77 +49,63 @@ export default function TaskList({ tasks, onUpdate }) {
     onUpdate()
   }
 
-  const filtered = filter === 'all' ? tasks
-    : filter === 'done' ? tasks.filter(t => t.completed)
-    : filter === 'active' ? tasks.filter(t => !t.completed)
-    : tasks.filter(t => t.category === filter)
-
-  const activeCnt = tasks.filter(t => !t.completed).length
-
-  function isOverdue(task) {
-    if (!task.deadline || task.completed) return false
-    return new Date(task.deadline) < new Date()
+  let filtered = tasks
+  if (filter !== 'all') {
+    filtered = tasks.filter(t => t.category === filter)
   }
+
+  const active = tasks.filter(t => !t.completed).length
 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <span className="section-title" style={{marginBottom:0}}>
-          ✅ Задачи
-          {activeCnt > 0 && <span className="badge badge-medium">{activeCnt}</span>}
+          <CheckSquare size={18} style={{marginRight:4}} /> Список задач
+          <span className="text-muted text-sm" style={{fontWeight:400}}>({active} акт.)</span>
         </span>
         <button className="btn btn-sm btn-ghost" onClick={() => setShowAdd(v => !v)}>
           <Plus size={14}/> Добавить
         </button>
       </div>
 
-      {/* Filters */}
-      <div style={{display:'flex', gap:6, flexWrap:'wrap', marginBottom:14}}>
-        {[
-          {id:'all',label:'Все'},
-          {id:'active',label:'Активные'},
-          {id:'done',label:'Готово'},
-          ...CATEGORIES,
-        ].map(f => (
-          <button
-            key={f.id}
-            className={`tag ${filter === f.id ? 'selected' : ''}`}
-            onClick={() => setFilter(f.id)}
-          >
-            {f.emoji && <span>{f.emoji} </span>}{f.label}
-          </button>
-        ))}
+      <div className="period-tabs mb-4">
+        <button className={`period-tab ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>Все</button>
+        <button className={`period-tab ${filter === 'work' ? 'active' : ''}`} onClick={() => setFilter('work')}>Работа</button>
+        <button className={`period-tab ${filter === 'personal' ? 'active' : ''}`} onClick={() => setFilter('personal')}>Личное</button>
+        <button className={`period-tab ${filter === 'learning' ? 'active' : ''}`} onClick={() => setFilter('learning')}>Обучение</button>
       </div>
 
       {showAdd && (
-        <div className="card-sm mb-3 animate-in">
-          <div className="form-group mb-3">
-            <label className="form-label">Задача</label>
-            <input
-              className="input"
-              placeholder="Что нужно сделать?"
-              value={form.title}
-              onChange={e => setForm(p => ({...p, title: e.target.value}))}
-              onKeyDown={e => e.key === 'Enter' && addTask()}
-              autoFocus
-            />
+        <div className="card-sm mb-4 animate-in">
+          <div className="form-row mb-3">
+            <div className="form-group" style={{flex:2}}>
+              <label className="form-label">Название задачи</label>
+              <input
+                className="input"
+                placeholder="Что нужно сделать?"
+                value={newTitle}
+                onChange={e => setNewTitle(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && addTask()}
+                autoFocus
+              />
+            </div>
+            <div className="form-group" style={{flex:1}}>
+              <label className="form-label">Дедлайн (необяз.)</label>
+              <input type="date" className="input" value={newDate} onChange={e => setNewDate(e.target.value)} />
+            </div>
           </div>
           <div className="form-row mb-3">
-            <div className="form-group">
+            <div className="form-group" style={{flex:1}}>
               <label className="form-label">Категория</label>
-              <select className="select input" value={form.category} onChange={e => setForm(p => ({...p, category: e.target.value}))}>
-                {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>)}
+              <select className="select" value={newCat} onChange={e => setNewCat(e.target.value)}>
+                {Object.entries(CATEGORIES).map(([k,v]) => <option key={k} value={k}>{v.label}</option>)}
               </select>
             </div>
-            <div className="form-group">
+            <div className="form-group" style={{flex:1}}>
               <label className="form-label">Приоритет</label>
-              <select className="select input" value={form.priority} onChange={e => setForm(p => ({...p, priority: e.target.value}))}>
-                {PRIORITIES.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+              <select className="select" value={newPriority} onChange={e => setNewPriority(e.target.value)}>
+                {Object.entries(PRIORITIES).map(([k,v]) => <option key={k} value={k}>{v.label}</option>)}
               </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Дедлайн</label>
-              <input type="date" className="input" value={form.deadline} onChange={e => setForm(p => ({...p, deadline: e.target.value}))} />
             </div>
           </div>
           <div className="flex gap-2">
@@ -132,50 +119,47 @@ export default function TaskList({ tasks, onUpdate }) {
 
       {filtered.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">📝</div>
-          <div className="empty-state-text">Задач нет</div>
+          <div className="empty-state-icon">
+             <AlignLeft size={40} strokeWidth={1.5} />
+          </div>
+          <div className="empty-state-text">Задач в этой категории нет.</div>
         </div>
       ) : (
         <div className="stack">
-          {filtered.map(t => {
-            const cat = CATEGORIES.find(c => c.id === t.category)
-            const pri = PRIORITIES.find(p => p.id === t.priority)
-            return (
-              <div key={t.id} className={`task-item animate-in ${t.completed ? 'task-done' : ''}`}>
-                <div
-                  className={`checkbox ${t.completed ? 'checked' : ''}`}
-                  onClick={() => toggleTask(t)}
-                  style={{marginTop:2}}
-                >
-                  {t.completed && <Check size={13} strokeWidth={3}/>}
-                </div>
-                <div style={{flex:1, minWidth:0}}>
-                  <div style={{
-                    fontWeight:500,
-                    fontSize:14,
-                    textDecoration: t.completed ? 'line-through' : 'none',
-                    color: t.completed ? 'var(--text-muted)' : 'var(--text)',
-                  }} className="truncate">{t.title}</div>
-                  <div className="task-meta">
-                    <div className={`priority-dot ${pri?.dot}`}></div>
-                    <span className={`badge ${pri?.cls}`}>{pri?.label}</span>
-                    {cat && <span className="text-xs text-muted">{cat.emoji} {cat.label}</span>}
-                    {t.deadline && (
-                      <span className={`text-xs ${isOverdue(t) ? '' : 'text-muted'}`}
-                        style={{color: isOverdue(t) ? 'var(--danger)' : undefined}}>
-                        <Calendar size={10} style={{display:'inline', marginRight:3}} />
-                        {new Date(t.deadline).toLocaleDateString('ru-RU')}
-                        {isOverdue(t) && ' — просрочено'}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <button className="btn-icon" onClick={() => deleteTask(t.id)} title="Удалить">
-                  <Trash2 size={13}/>
-                </button>
+          {filtered.map(t => (
+            <div key={t.id} className={`task-item animate-in ${t.completed ? 'task-done' : ''}`}>
+              <div
+                className={`checkbox ${t.completed ? 'checked' : ''} mt-1`}
+                onClick={() => toggleTask(t)}
+              >
+                {t.completed && <Check size={13} strokeWidth={3}/>}
               </div>
-            )
-          })}
+              <div style={{flex:1, minWidth:0}}>
+                <div style={{fontWeight:500, fontSize:14}}>{t.title}</div>
+                <div className="task-meta">
+                  {CATEGORIES[t.category] && (
+                    <span className="flex items-center gap-2 text-xs" style={{color: CATEGORIES[t.category].color}}>
+                      <div className="w-2 h-2 rounded-full bg-current" style={{width:6,height:6,borderRadius:'50%',background:'currentColor'}}/>
+                      {CATEGORIES[t.category].label}
+                    </span>
+                  )}
+                  {PRIORITIES[t.priority] && (
+                    <span className={`badge ${PRIORITIES[t.priority].class}`}>
+                      {PRIORITIES[t.priority].label}
+                    </span>
+                  )}
+                  {t.due_date && (
+                    <span className="flex items-center gap-1 text-xs text-muted">
+                      <Calendar size={12}/> {new Date(t.due_date).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button className="btn-icon" onClick={() => deleteTask(t.id)}>
+                <Trash2 size={13}/>
+              </button>
+            </div>
+          ))}
         </div>
       )}
     </div>

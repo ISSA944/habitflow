@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Home, CheckSquare, BarChart2, Zap, Settings, CalendarDays, ListTodo, AlertTriangle } from 'lucide-react'
+import { Home, CheckSquare, BarChart2, Zap, Settings, CalendarDays, ListTodo, AlertTriangle, Target } from 'lucide-react'
 import { supabase, isConnected } from './lib/supabase'
 import { getQuoteForUser } from './lib/quotes'
 import ClockWidget from './components/ClockWidget'
@@ -99,45 +99,41 @@ export default function App() {
       <div className="animate-in">
         <div className="page-title">Сегодня</div>
 
-        {/* Clock + Quote */}
-        <div className="grid-2 mb-4">
-          <div className="card">
+        <div className="bento-grid">
+          {/* Top Row: Clock & Quote */}
+          <div className="card bento-col-5" style={{display:'flex', alignItems:'center', justifyContent:'center'}}>
             <ClockWidget />
           </div>
-          <div className="card">
+          <div className="card bento-col-7" style={{display:'flex', flexDirection:'column', justifyContent:'center'}}>
             <QuoteWidget preferences={quotePrefs} />
           </div>
-        </div>
 
-        {/* Stats */}
-        <div className="grid-3 mb-4">
-          <div className="card stat-card" style={{cursor:'pointer'}} onClick={() => setPage('habits')}>
+          {/* Stats Row */}
+          <div className="card stat-card bento-col-4" style={{cursor:'pointer'}} onClick={() => setPage('habits')}>
             <div className="stat-number">{doneHabits}<span style={{fontSize:24,opacity:0.4}}>/{habits.length}</span></div>
-            <div className="stat-label">🌱 Привычек выполнено</div>
+            <div className="stat-label flex items-center justify-center gap-2"><Target size={14} /> Привычек выполнено</div>
           </div>
-          <div className="card stat-card" style={{cursor:'pointer'}} onClick={() => setPage('tasks')}>
+          <div className="card stat-card bento-col-4" style={{cursor:'pointer'}} onClick={() => setPage('tasks')}>
             <div className="stat-number">{activeTasks}</div>
-            <div className="stat-label">✅ Активных задач</div>
+            <div className="stat-label flex items-center justify-center gap-2"><CheckSquare size={14} /> Активных задач</div>
           </div>
-          <div className="card stat-card" style={{cursor:'pointer'}} onClick={() => setPage('routine')}>
+          <div className="card stat-card bento-col-4" style={{cursor:'pointer'}} onClick={() => setPage('routine')}>
             <div className="stat-number">{doneRoutine}<span style={{fontSize:24,opacity:0.4}}>/{routines.length}</span></div>
-            <div className="stat-label">🗓 Рутина выполнена</div>
+            <div className="stat-label flex items-center justify-center gap-2"><CalendarDays size={14} /> Рутина выполнена</div>
           </div>
-        </div>
 
-        {/* Habits preview + AI */}
-        <div className="grid-2 mb-4">
-          <div className="card">
+          {/* Activity Row */}
+          <div className="card bento-col-7">
             <HabitTracker habits={habits.slice(0,5)} habitLogs={habitLogs} today={TODAY} onUpdate={loadAll} />
           </div>
-          <div className="card">
+          <div className="card bento-col-5">
+            <TaskList tasks={tasks.filter(t => !t.completed).slice(0,5)} onUpdate={loadAll} />
+          </div>
+
+          {/* AI Advisor Row */}
+          <div className="card bento-col-12">
             <AIAdvisor habits={habits} habitLogs={habitLogs} tasks={tasks} />
           </div>
-        </div>
-
-        {/* Tasks preview */}
-        <div className="card">
-          <TaskList tasks={tasks.filter(t => !t.completed).slice(0,5)} onUpdate={loadAll} />
         </div>
       </div>
     )
