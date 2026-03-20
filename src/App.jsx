@@ -19,9 +19,18 @@ const NAV = [
   { id: 'habits', label: 'Привычки', icon: CheckSquare },
   { id: 'tasks', label: 'Задачи', icon: ListTodo },
   { id: 'routine', label: 'Рутина', icon: CalendarDays },
-  { id: 'ai', label: 'AI советы', icon: Zap },
+  { id: 'ai', label: 'AI советы', icon: Zap, desktopOnly: true },
   { id: 'charts', label: 'Аналитика', icon: BarChart2 },
   { id: 'settings', label: 'Настройки', icon: Settings },
+]
+
+// Mobile bottom nav: only 5 items
+const MOBILE_NAV = [
+  { id: 'home', label: 'Главная', icon: Home },
+  { id: 'habits', label: 'Привычки', icon: CheckSquare },
+  { id: 'tasks', label: 'Задачи', icon: ListTodo },
+  { id: 'charts', label: 'Аналитика', icon: BarChart2 },
+  { id: 'settings', label: 'Ещё', icon: Settings },
 ]
 
 export default function App() {
@@ -108,18 +117,29 @@ export default function App() {
             <QuoteWidget preferences={quotePrefs} />
           </div>
 
-          {/* Stats Row */}
-          <div className="card stat-card bento-col-4" style={{cursor:'pointer'}} onClick={() => setPage('habits')}>
-            <div className="stat-number">{doneHabits}<span style={{fontSize:24,opacity:0.4}}>/{habits.length}</span></div>
-            <div className="stat-label flex items-center justify-center gap-2"><Target size={14} /> Привычек выполнено</div>
-          </div>
-          <div className="card stat-card bento-col-4" style={{cursor:'pointer'}} onClick={() => setPage('tasks')}>
-            <div className="stat-number">{activeTasks}</div>
-            <div className="stat-label flex items-center justify-center gap-2"><CheckSquare size={14} /> Активных задач</div>
-          </div>
-          <div className="card stat-card bento-col-4" style={{cursor:'pointer'}} onClick={() => setPage('routine')}>
-            <div className="stat-number">{doneRoutine}<span style={{fontSize:24,opacity:0.4}}>/{routines.length}</span></div>
-            <div className="stat-label flex items-center justify-center gap-2"><CalendarDays size={14} /> Рутина выполнена</div>
+          {/* Stats Row — horizontal scroll on mobile */}
+          <div className="bento-col-12 stats-scroll">
+            <div className="card stat-card stat-mini" style={{cursor:'pointer'}} onClick={() => setPage('habits')}>
+              <div className="stat-icon-wrap"><Target size={18} /></div>
+              <div>
+                <div className="stat-number">{doneHabits}<span style={{fontSize:18,opacity:0.4}}>/{habits.length}</span></div>
+                <div className="stat-label">Привычки</div>
+              </div>
+            </div>
+            <div className="card stat-card stat-mini" style={{cursor:'pointer'}} onClick={() => setPage('tasks')}>
+              <div className="stat-icon-wrap"><CheckSquare size={18} /></div>
+              <div>
+                <div className="stat-number">{activeTasks}</div>
+                <div className="stat-label">Задачи</div>
+              </div>
+            </div>
+            <div className="card stat-card stat-mini" style={{cursor:'pointer'}} onClick={() => setPage('routine')}>
+              <div className="stat-icon-wrap"><CalendarDays size={18} /></div>
+              <div>
+                <div className="stat-number">{doneRoutine}<span style={{fontSize:18,opacity:0.4}}>/{routines.length}</span></div>
+                <div className="stat-label">Рутина</div>
+              </div>
+            </div>
           </div>
 
           {/* Activity Row */}
@@ -199,8 +219,8 @@ export default function App() {
 
   return (
     <div className="app">
-      {/* Sidebar */}
-      <nav className="sidebar">
+      {/* Desktop Sidebar */}
+      <nav className="sidebar desktop-nav">
         <div className="sidebar-brand">
           <div className="sidebar-brand-icon">🌱</div>
           <div className="sidebar-brand-name">HabitFlow</div>
@@ -215,6 +235,23 @@ export default function App() {
               onClick={() => setPage(item.id)}
             >
               <Icon size={17} className="nav-icon" />
+              <span>{item.label}</span>
+            </button>
+          )
+        })}
+      </nav>
+
+      {/* Mobile Bottom Nav */}
+      <nav className="mobile-nav">
+        {MOBILE_NAV.map(item => {
+          const Icon = item.icon
+          return (
+            <button
+              key={item.id}
+              className={`mobile-nav-item ${page === item.id ? 'active' : ''}`}
+              onClick={() => setPage(item.id)}
+            >
+              <Icon size={20} strokeWidth={page === item.id ? 2.5 : 1.8} />
               <span>{item.label}</span>
             </button>
           )

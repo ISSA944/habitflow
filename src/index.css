@@ -541,6 +541,65 @@ body {
   margin-top: 6px;
   font-weight: 500;
 }
+.stat-icon-wrap {
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-dim);
+  border-radius: 12px;
+  flex-shrink: 0;
+  color: var(--text);
+}
+.stat-mini {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  padding: 16px 20px;
+  min-width: 0;
+}
+.stats-scroll {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* Mobile nav — hidden on desktop */
+.mobile-nav {
+  display: none;
+}
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 0;
+  min-width: 0;
+  flex: 1;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+  position: relative;
+}
+.mobile-nav-item.active {
+  color: var(--text);
+}
+.mobile-nav-item.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 2.5px;
+  background: var(--text);
+  border-radius: 0 0 4px 4px;
+}
 
 /* Period tabs */
 .period-tabs {
@@ -675,46 +734,239 @@ body {
 .empty-state-text { font-size: 14px; }
 
 /* --- Responsive --- */
+
+/* Tablet breakpoint */
 @media (max-width: 1024px) {
   .grid-3 { grid-template-columns: 1fr 1fr; }
-  .bento-col-4, .bento-col-5, .bento-col-6, .bento-col-7, .bento-col-8 { grid-column: span 12; }
+  .bento-col-4, .bento-col-5, .bento-col-6, .bento-col-7, .bento-col-8 {
+    grid-column: span 6;
+  }
+  .bento-col-12 { grid-column: span 12; }
+  .main-content { padding: 24px 20px; }
+  .stats-scroll { grid-template-columns: repeat(3, 1fr); }
 }
 
+/* Mobile breakpoint */
 @media (max-width: 768px) {
-  .sidebar, .sidebar:hover {
-    width: 100%;
-    height: auto;
+  /* ── Hide desktop sidebar, show mobile nav ── */
+  .desktop-nav { display: none !important; }
+  .mobile-nav {
+    display: flex;
     position: fixed;
     bottom: 0;
-    top: auto;
     left: 0; right: 0;
-    flex-direction: row;
-    padding: 8px 12px;
-    border-right: none;
-    border-top: 1px solid var(--border);
-    overflow-x: auto;
-    overflow-y: visible;
     z-index: 200;
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 -6px 30px rgba(0,0,0,0.5);
+    padding: 8px 0;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    justify-content: space-around;
+    align-items: center;
   }
-  .sidebar-brand { display: none; }
-  .nav-group-label { display: none; }
-  .nav-item {
-    flex-direction: column;
-    gap: 4px;
-    padding: 8px;
-    font-size: 10px;
-    min-width: 56px;
-  }
-  .nav-icon { margin-left: 0; }
-  .nav-item span, .sidebar:hover .nav-item span {
-    opacity: 1; visibility: visible;
-  }
+
+  /* ── Main Content ── */
   .main-content {
     margin-left: 0;
     padding: 16px;
     max-width: 100vw;
-    padding-bottom: 90px;
+    padding-bottom: 100px;
   }
+
+  /* ── Bento Grid → single column ── */
+  .bento-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .bento-col-4, .bento-col-5, .bento-col-6,
+  .bento-col-7, .bento-col-8, .bento-col-12 {
+    grid-column: span 1;
+  }
+
+  /* ── Stats scroll → horizontal on mobile ── */
+  .stats-scroll {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .stats-scroll::-webkit-scrollbar { display: none; }
+  .stats-scroll .stat-mini {
+    min-width: 140px;
+    flex-shrink: 0;
+    flex: 1;
+  }
+  .stat-icon-wrap {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+  }
+  .stat-mini .stat-number { font-size: 22px; }
+  .stat-mini .stat-label { font-size: 11px; }
+
+  /* ── Cards ── */
+  .card {
+    border-radius: 16px;
+    padding: 16px;
+  }
+  .card-sm {
+    padding: 14px;
+    border-radius: 12px;
+  }
+
+  /* ── Grids ── */
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
-  .clock-time { font-size: 48px; }
+
+  /* ── Typography ── */
+  .page-title {
+    font-size: 22px;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  /* ── Clock ── */
+  .clock-widget { padding: 20px 12px; }
+  .clock-time { font-size: 48px; letter-spacing: -2px; }
+  .clock-greeting { font-size: 16px; }
+  .clock-date { font-size: 12px; }
+
+  /* ── Quote ── */
+  .quote-text { font-size: 15px; line-height: 1.5; }
+  .quote-author { font-size: 11px; }
+
+  /* ── Buttons (48px touch targets) ── */
+  .btn { padding: 12px 18px; font-size: 14px; min-height: 44px; }
+  .btn-sm { padding: 10px 14px; font-size: 13px; min-height: 40px; }
+  .btn-icon {
+    padding: 10px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* ── Checkbox (larger touch) ── */
+  .checkbox {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+  }
+
+  /* ── Inputs ── */
+  .input, .select {
+    padding: 12px 14px;
+    font-size: 16px; /* prevents iOS zoom */
+    border-radius: 12px;
+  }
+
+  /* ── Form Row: stack vertically ── */
+  .form-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .form-group { min-width: 0; }
+  .form-label { font-size: 12px; }
+
+  /* ── Habit items ── */
+  .habit-item {
+    padding: 14px;
+    gap: 10px;
+    border-radius: 14px;
+  }
+  .habit-emoji {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    font-size: 18px;
+  }
+  .streak-badge { font-size: 12px; }
+
+  /* ── Task items ── */
+  .task-item {
+    padding: 14px;
+    gap: 10px;
+    border-radius: 14px;
+  }
+  .task-meta { gap: 6px; margin-top: 4px; }
+
+  /* ── Routine items ── */
+  .routine-item {
+    padding: 14px;
+    gap: 10px;
+    border-radius: 14px;
+  }
+
+  /* ── Period tabs (scrollable) ── */
+  .period-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 2px;
+    padding: 3px;
+  }
+  .period-tabs::-webkit-scrollbar { display: none; }
+  .period-tab {
+    padding: 8px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+    flex: none;
+  }
+
+  /* ── Tags ── */
+  .tag {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  /* ── Tip Cards ── */
+  .tip-card {
+    padding: 12px 14px;
+    gap: 10px;
+    border-radius: 14px;
+  }
+  .tip-icon { font-size: 18px; }
+
+  /* ── Modal ── */
+  .modal-overlay { padding: 12px; }
+  .modal {
+    border-radius: 20px;
+    padding: 22px;
+    max-height: 85vh;
+  }
+  .modal-title { font-size: 18px; margin-bottom: 16px; }
+
+  /* ── Empty state ── */
+  .empty-state { padding: 30px 16px; }
+  .empty-state-icon { font-size: 34px; margin-bottom: 10px; }
+  .empty-state-text { font-size: 13px; }
+
+  /* ── Notification banner ── */
+  .notif-banner {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+    padding: 12px;
+    font-size: 12px;
+    border-radius: 14px;
+  }
+
+  /* ── Stacks ── */
+  .stack { gap: 8px; }
+
+  /* ── Badge ── */
+  .badge { font-size: 10px; padding: 3px 8px; }
+}
+
+/* Small phone breakpoint */
+@media (max-width: 380px) {
+  .main-content { padding: 12px 10px; padding-bottom: 100px; }
+  .page-title { font-size: 20px; }
+  .clock-time { font-size: 40px; }
+  .clock-greeting { font-size: 14px; }
+  .stat-mini .stat-number { font-size: 18px; }
+  .card { padding: 12px; }
+  .mobile-nav-item span { font-size: 9px; }
+  .stats-scroll .stat-mini { min-width: 120px; padding: 12px 14px; }
 }
